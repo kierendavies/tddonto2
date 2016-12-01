@@ -215,4 +215,29 @@ public class AxiomTesterTest {
                 )
         );
     }
+
+    @Test
+    public void testClassAssertion() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testClassAssertion(
+                        parseClass("Country"),
+                        parseIndiv("England")
+                )
+        );
+        assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testClassAssertion(
+                        parseClass("Food"),
+                        parseIndiv("England")
+                )
+        );
+        assertEquals(
+                TestResult.INCONSISTENT,
+                axiomTester.testClassAssertion(
+                        dataFactory.getOWLObjectComplementOf(parseClass("Country")),
+                        parseIndiv("England")
+                )
+        );
+    }
 }

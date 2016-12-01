@@ -143,4 +143,14 @@ public class AxiomTester {
     public TestResult testDifferentIndividuals(OWLNamedIndividual... as) {
         return testDifferentIndividuals(Arrays.asList(as));
     }
+
+    public TestResult testClassAssertion(OWLClassExpression c, OWLNamedIndividual a) {
+        if (reasoner.getInstances(c, false).containsEntity(a)) {
+            return ENTAILED;
+        } else if (reasoner.getInstances(dataFactory.getOWLObjectComplementOf(c), false).containsEntity(a)) {
+            return INCONSISTENT;
+        } else {
+            return ABSENT;
+        }
+    }
 }
