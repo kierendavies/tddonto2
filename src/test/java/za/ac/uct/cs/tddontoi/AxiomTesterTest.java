@@ -23,6 +23,10 @@ public class AxiomTesterTest {
         return dataFactory.getOWLClass(IRI.create(pizzaPrefix, name));
     }
 
+    private OWLNamedIndividual parseIndiv(String name) {
+        return dataFactory.getOWLNamedIndividual(IRI.create(pizzaPrefix, name));
+    }
+
     private OWLObjectProperty parseObjProp(String name) {
         return dataFactory.getOWLObjectProperty(IRI.create(pizzaPrefix, name));
     }
@@ -158,6 +162,24 @@ public class AxiomTesterTest {
                         parseClass("Food"),
                         parseClass("Pizza"),
                         parseClass("PizzaBase")
+                )
+        );
+    }
+
+    @Test
+    public void testSameIndividual() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testSameIndividual(
+                        parseIndiv("England"),
+                        parseIndiv("England")
+                )
+        );
+        assertEquals(
+                TestResult.INCONSISTENT,
+                axiomTester.testSameIndividual(
+                        parseIndiv("England"),
+                        parseIndiv("France")
                 )
         );
     }

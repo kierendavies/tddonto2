@@ -1,14 +1,9 @@
 package za.ac.uct.cs.tddontoi;
 
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static za.ac.uct.cs.tddontoi.TestResult.*;
 
@@ -35,6 +30,8 @@ public class AxiomTester {
     private boolean hasInstances(OWLClassExpression c) {
         return !reasoner.getInstances(c, false).isEmpty();
     }
+
+    // TBox
 
     public TestResult testSubClassOf(OWLClassExpression c, OWLClassExpression d) {
         OWLClassExpression cAndNotD = dataFactory.getOWLObjectIntersectionOf(c, dataFactory.getOWLObjectComplementOf(d));
@@ -92,5 +89,26 @@ public class AxiomTester {
         TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(cs));
         TestResult disjResult = testDisjointClasses(cs);
         return TestResult.max(equivResult, disjResult);
+    }
+
+    // ABox
+
+    public TestResult testSameIndividual(Collection<OWLNamedIndividual> as) {
+        OWLNamedIndividual a1 = as.iterator().next();
+        if (reasoner.getSameIndividuals(a1).getEntities().containsAll(as)) {
+            return ENTAILED;
+        }
+        for (OWLNamedIndividual a : as) {
+            Set<OWLNamedIndividual> differentIndividuals = reasoner.getDifferentIndividuals(a).getFlattened();
+            differentIndividuals.retainAll(as);
+            if (!differentIndividuals.isEmpty()) {
+                return INCONSISTENT;
+            }
+        }
+        return ABSENT;
+    }
+
+    public TestResult testSameIndividual(OWLNamedIndividual... as) {
+        return testSameIndividual(Arrays.asList(as));
     }
 }
