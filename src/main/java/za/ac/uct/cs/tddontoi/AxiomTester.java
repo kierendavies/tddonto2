@@ -87,4 +87,10 @@ public class AxiomTester {
     public TestResult testDisjointClasses(OWLClassExpression... cs) {
         return testDisjointClasses(Arrays.asList(cs));
     }
+
+    public TestResult testDisjointUnion(OWLClass n, OWLClassExpression... cs) {
+        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(cs));
+        TestResult disjResult = testDisjointClasses(cs);
+        return TestResult.max(equivResult, disjResult);
+    }
 }

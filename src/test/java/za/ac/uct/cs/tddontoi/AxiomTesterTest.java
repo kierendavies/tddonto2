@@ -132,4 +132,33 @@ public class AxiomTesterTest {
                 )
         );
     }
+
+    @Test
+    public void testDisjointUnion() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testDisjointUnion(
+                        parseClass("Food"),
+                        parseClass("Pizza"),
+                        dataFactory.getOWLObjectIntersectionOf(parseClass("Food"), dataFactory.getOWLObjectComplementOf(parseClass("Pizza")))
+                )
+        );
+        assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testDisjointUnion(
+                        parseClass("Food"),
+                        parseClass("Pizza"),
+                        parseClass("PizzaBase"),
+                        parseClass("PizzaTopping")
+                )
+        );
+        assertEquals(
+                TestResult.INCOHERENT,
+                axiomTester.testDisjointUnion(
+                        parseClass("Food"),
+                        parseClass("Pizza"),
+                        parseClass("PizzaBase")
+                )
+        );
+    }
 }
