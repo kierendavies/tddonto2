@@ -18,28 +18,16 @@ public class AxiomTester {
         dataFactory = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory();
     }
 
-    private boolean isSatisfiable(OWLClassExpression c) {
-        return reasoner.isSatisfiable(c);
-    }
-
-    private boolean hasNamedSubClasses(OWLClassExpression c) {
-        return reasoner.getSubClasses(c, false).getFlattened().size() > 1  // always contains owl:Nothing
-            || reasoner.getEquivalentClasses(c).getEntitiesMinusBottom().size() > 0;
-    }
-
-    private boolean hasInstances(OWLClassExpression c) {
-        return !reasoner.getInstances(c, false).isEmpty();
-    }
-
     // TBox
 
     public TestResult testSubClassOf(OWLClassExpression c, OWLClassExpression d) {
         OWLClassExpression cAndNotD = dataFactory.getOWLObjectIntersectionOf(c, dataFactory.getOWLObjectComplementOf(d));
-        if (hasInstances(cAndNotD)) {
+        if (!reasoner.getInstances(cAndNotD, false).isEmpty()) {
             return INCONSISTENT;
-        } else if (hasNamedSubClasses(cAndNotD)) {
+        } else if (reasoner.getSubClasses(cAndNotD, false).getFlattened().size() > 1  // always contains owl:Nothing
+                || !reasoner.getEquivalentClasses(cAndNotD).getEntitiesMinusBottom().isEmpty()) {
             return INCOHERENT;
-        } else if (isSatisfiable(cAndNotD)) {
+        } else if (reasoner.isSatisfiable(cAndNotD)) {
             return ABSENT;
         } else {
             return ENTAILED;
