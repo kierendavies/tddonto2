@@ -23,6 +23,10 @@ public class AxiomTesterTest {
         return dataFactory.getOWLClass(IRI.create(pizzaPrefix, name));
     }
 
+    private OWLObjectProperty parseObjProp(String name) {
+        return dataFactory.getOWLObjectProperty(IRI.create(pizzaPrefix, name));
+    }
+
     @Before
     public void setUp() throws Exception {
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
@@ -44,6 +48,13 @@ public class AxiomTesterTest {
                 axiomTester.testSubClassOf(
                         parseClass("Margherita"),
                         parseClass("NamedPizza")
+                )
+        );
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testSubClassOf(
+                        dataFactory.getOWLObjectSomeValuesFrom(parseObjProp("hasTopping"), parseClass("MeatTopping")),
+                        dataFactory.getOWLObjectComplementOf(parseClass("VegetarianPizza"))
                 )
         );
         assertEquals(
