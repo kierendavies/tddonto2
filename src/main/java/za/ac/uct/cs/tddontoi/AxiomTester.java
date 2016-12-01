@@ -55,7 +55,7 @@ public class AxiomTester {
             for (OWLClassExpression d : cs) {
                 if (c == d) continue;
                 TestResult result = testSubClassOf(c, d);
-                if (result.compareTo(worstResult) > 0) worstResult = result;
+                worstResult = TestResult.max(worstResult, result);
             }
         }
         return worstResult;
@@ -78,7 +78,7 @@ public class AxiomTester {
         for (int i = 0; i < csAsList.size() - 1; i++) {
             for (int j = i + 1; j < csAsList.size(); j++) {
                 TestResult result = testSubClassOf(csAsList.get(i), dataFactory.getOWLObjectComplementOf(csAsList.get(j)));
-                if (result.compareTo(worstResult) > 0) worstResult = result;
+                worstResult = TestResult.max(worstResult, result);
             }
         }
         return worstResult;

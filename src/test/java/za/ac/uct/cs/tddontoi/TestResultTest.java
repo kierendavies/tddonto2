@@ -10,18 +10,18 @@ import static za.ac.uct.cs.tddontoi.TestResult.*;
 
 public class TestResultTest {
     @Test
-    public void testOrdering() throws Exception {
-        assertTrue(ENTAILED.compareTo(ENTAILED) == 0);
-
-        assertTrue(ENTAILED.compareTo(ABSENT) < 0);
-        assertTrue(ABSENT.compareTo(INCOHERENT) < 0);
-        assertTrue(INCOHERENT.compareTo(INCONSISTENT) < 0);
-
-        assertTrue(INCONSISTENT.compareTo(INCOHERENT) > 0);
-        assertTrue(INCOHERENT.compareTo(ABSENT) > 0);
-        assertTrue(ABSENT.compareTo(ENTAILED) > 0);
-
-        assertEquals(Collections.min(Arrays.asList(ENTAILED, ABSENT, INCOHERENT, INCONSISTENT)), ENTAILED);
-        assertEquals(Collections.max(Arrays.asList(ENTAILED, ABSENT, INCOHERENT, INCONSISTENT)), INCONSISTENT);
+    public void testMax() throws Exception {
+        assertEquals(TestResult.max(ENTAILED, ABSENT), ABSENT);
+        assertEquals(TestResult.max(ABSENT, ENTAILED), ABSENT);
+        assertEquals(TestResult.max(ENTAILED, INCOHERENT), INCOHERENT);
+        assertEquals(TestResult.max(INCOHERENT, ENTAILED), INCOHERENT);
+        assertEquals(TestResult.max(ENTAILED, INCONSISTENT), INCONSISTENT);
+        assertEquals(TestResult.max(INCONSISTENT, ENTAILED), INCONSISTENT);
+        assertEquals(TestResult.max(ABSENT, INCOHERENT), INCOHERENT);
+        assertEquals(TestResult.max(INCOHERENT, ABSENT), INCOHERENT);
+        assertEquals(TestResult.max(ABSENT, INCONSISTENT), INCONSISTENT);
+        assertEquals(TestResult.max(INCONSISTENT, ABSENT), INCONSISTENT);
+        assertEquals(TestResult.max(INCOHERENT, INCONSISTENT), INCONSISTENT);
+        assertEquals(TestResult.max(INCONSISTENT, INCOHERENT), INCONSISTENT);
     }
 }
