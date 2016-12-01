@@ -95,4 +95,30 @@ public class AxiomTesterTest {
                 )
         );
     }
+
+    @Test
+    public void testDisjointClasses() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testDisjointClasses(
+                        parseClass("Pizza"),
+                        parseClass("PizzaBase"),
+                        parseClass("PizzaTopping")
+                )
+        );
+        assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testDisjointClasses(
+                        parseClass("SpicyPizza"),
+                        parseClass("VegetarianPizza")
+                )
+        );
+        assertEquals(
+                TestResult.INCOHERENT,
+                axiomTester.testDisjointClasses(
+                        parseClass("Pizza"),
+                        parseClass("Pizza")
+                )
+        );
+    }
 }

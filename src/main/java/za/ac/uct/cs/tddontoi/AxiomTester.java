@@ -5,8 +5,10 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static za.ac.uct.cs.tddontoi.TestResult.*;
 
@@ -53,9 +55,7 @@ public class AxiomTester {
             for (OWLClassExpression d : cs) {
                 if (c == d) continue;
                 TestResult result = testSubClassOf(c, d);
-                if (result.compareTo(worstResult) > 0) {
-                    worstResult = result;
-                }
+                if (result.compareTo(worstResult) > 0) worstResult = result;
             }
         }
         return worstResult;
@@ -63,5 +63,28 @@ public class AxiomTester {
 
     public TestResult testEquivalentClasses(OWLClassExpression... cs) {
         return testEquivalentClasses(Arrays.asList(cs));
+    }
+
+    public TestResult testDisjointClasses(Collection<OWLClassExpression> cs) {
+        List<OWLClassExpression> csAsList;
+        if (cs instanceof List) {
+            csAsList = (List<OWLClassExpression>) cs;
+        } else {
+            csAsList = new ArrayList<OWLClassExpression>();
+            csAsList.addAll(cs);
+        }
+
+        TestResult worstResult = ENTAILED;
+        for (int i = 0; i < csAsList.size() - 1; i++) {
+            for (int j = i + 1; j < csAsList.size(); j++) {
+                TestResult result = testSubClassOf(csAsList.get(i), dataFactory.getOWLObjectComplementOf(csAsList.get(j)));
+                if (result.compareTo(worstResult) > 0) worstResult = result;
+            }
+        }
+        return worstResult;
+    }
+
+    public TestResult testDisjointClasses(OWLClassExpression... cs) {
+        return testDisjointClasses(Arrays.asList(cs));
     }
 }
