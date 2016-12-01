@@ -5,6 +5,9 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static za.ac.uct.cs.tddontoi.TestResult.*;
 
 public class AxiomTester {
@@ -42,5 +45,23 @@ public class AxiomTester {
         } else {
             return ENTAILED;
         }
+    }
+
+    public TestResult testEquivalentClasses(Collection<OWLClassExpression> cs) {
+        TestResult worstResult = ENTAILED;
+        for (OWLClassExpression c : cs) {
+            for (OWLClassExpression d : cs) {
+                if (c == d) continue;
+                TestResult result = testSubClassOf(c, d);
+                if (result.compareTo(worstResult) > 0) {
+                    worstResult = result;
+                }
+            }
+        }
+        return worstResult;
+    }
+
+    public TestResult testEquivalentClasses(OWLClassExpression... cs) {
+        return testEquivalentClasses(Arrays.asList(cs));
     }
 }

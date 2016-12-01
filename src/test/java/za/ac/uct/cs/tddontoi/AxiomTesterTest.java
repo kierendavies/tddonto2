@@ -40,11 +40,11 @@ public class AxiomTesterTest {
     @Test
     public void testSubClassOf() throws Exception {
         assertEquals(
-            TestResult.ENTAILED,
-            axiomTester.testSubClassOf(
-                parseClass("Margherita"),
-                parseClass("NamedPizza")
-            )
+                TestResult.ENTAILED,
+                axiomTester.testSubClassOf(
+                        parseClass("Margherita"),
+                        parseClass("NamedPizza")
+                )
         );
         assertEquals(
                 TestResult.ABSENT,
@@ -65,6 +65,33 @@ public class AxiomTesterTest {
                 axiomTester.testSubClassOf(
                         parseClass("Country"),
                         dataFactory.getOWLObjectComplementOf(parseClass("Country"))
+                )
+        );
+    }
+
+    @Test
+    public void testEquivalentClasses() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testEquivalentClasses(
+                        parseClass("SpicyPizza"),
+                        parseClass("SpicyPizzaEquivalent")
+                )
+        );
+        assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testEquivalentClasses(
+                        parseClass("Country"),
+                        parseClass("Pizza")
+                )
+        );
+        assertEquals(
+                TestResult.INCOHERENT,
+                axiomTester.testEquivalentClasses(
+                        parseClass("Country"),
+                        parseClass("Pizza"),
+                        parseClass("PizzaBase"),
+                        parseClass("PizzaTopping")
                 )
         );
     }
