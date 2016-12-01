@@ -10,12 +10,10 @@ import static za.ac.uct.cs.tddontoi.TestResult.*;
 public class AxiomTester {
     private final OWLReasoner reasoner;
     private final OWLDataFactory dataFactory;
-    private final OWLClass nothing;
 
     public AxiomTester(OWLReasoner reasoner) {
         this.reasoner = reasoner;
         dataFactory = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory();
-        nothing = dataFactory.getOWLNothing();
     }
 
     private boolean isSatisfiable(OWLClassExpression c) {
@@ -24,7 +22,7 @@ public class AxiomTester {
 
     private boolean hasNamedSubClasses(OWLClassExpression c) {
         return reasoner.getSubClasses(c, false).getFlattened().size() > 1  // always contains owl:Nothing
-            || reasoner.getEquivalentClasses(c).getEntitiesMinus(nothing).size() > 0;
+            || reasoner.getEquivalentClasses(c).getEntitiesMinusBottom().size() > 0;
     }
 
     private boolean hasInstances(OWLClassExpression c) {
