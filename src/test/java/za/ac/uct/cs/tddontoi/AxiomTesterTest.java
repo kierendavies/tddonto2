@@ -176,10 +176,42 @@ public class AxiomTesterTest {
                 )
         );
         assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testSameIndividual(
+                        parseIndiv("England"),
+                        parseIndiv("Scotland")
+                )
+        );
+        assertEquals(
                 TestResult.INCONSISTENT,
                 axiomTester.testSameIndividual(
                         parseIndiv("England"),
                         parseIndiv("France")
+                )
+        );
+    }
+
+    @Test
+    public void testDifferentIndividuals() throws Exception {
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.testDifferentIndividuals(
+                        parseIndiv("England"),
+                        parseIndiv("France")
+                )
+        );
+        assertEquals(
+                TestResult.ABSENT,
+                axiomTester.testDifferentIndividuals(
+                        parseIndiv("England"),
+                        parseIndiv("Scotland")
+                )
+        );
+        assertEquals(
+                TestResult.INCONSISTENT,
+                axiomTester.testDifferentIndividuals(
+                        parseIndiv("England"),
+                        parseIndiv("England")
                 )
         );
     }

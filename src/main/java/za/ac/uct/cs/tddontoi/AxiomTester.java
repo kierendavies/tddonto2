@@ -1,6 +1,8 @@
 package za.ac.uct.cs.tddontoi;
 
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.Node;
+import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.*;
@@ -108,5 +110,37 @@ public class AxiomTester {
 
     public TestResult testSameIndividual(OWLNamedIndividual... as) {
         return testSameIndividual(Arrays.asList(as));
+    }
+
+    public TestResult testDifferentIndividuals(Collection<OWLNamedIndividual> as) {
+        List<OWLNamedIndividual> asAsList;
+        if (as instanceof List) {
+            asAsList = (List<OWLNamedIndividual>) as;
+        } else {
+            asAsList = new ArrayList<OWLNamedIndividual>();
+            asAsList.addAll(as);
+        }
+
+        for (int i = 0; i < asAsList.size(); i++) {
+            Node<OWLNamedIndividual> sameIndividuals = reasoner.getSameIndividuals(asAsList.get(i));
+            for (int j = 0; j < asAsList.size(); j++) {
+                if (i != j && sameIndividuals.contains(asAsList.get(j))) {
+                    return INCONSISTENT;
+                }
+            }
+        }
+        for (int i = 0; i < asAsList.size(); i++) {
+            NodeSet<OWLNamedIndividual> differentIndividuals = reasoner.getDifferentIndividuals(asAsList.get(i));
+            for (int j = 0; j < asAsList.size(); j++) {
+                if (i != j && !differentIndividuals.containsEntity(asAsList.get(j))) {
+                    return ABSENT;
+                }
+            }
+        }
+        return ENTAILED;
+    }
+
+    public TestResult testDifferentIndividuals(OWLNamedIndividual... as) {
+        return testDifferentIndividuals(Arrays.asList(as));
     }
 }
