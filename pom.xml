@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>za.ac.uct.cs</groupId>
-    <artifactId>tddonto-improved</artifactId>
+    <artifactId>tddonto2</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>TDDOnto2</name>

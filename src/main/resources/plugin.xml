@@ -3,7 +3,7 @@
     <extension id="TestsViewComponent"
                point="org.protege.editor.core.application.ViewComponent">
         <label value="TDDOnto2"/>
-        <class value="za.ac.uct.cs.tddontoi.TestsViewComponent"/>
+        <class value="za.ac.uct.cs.tddonto2.TestsViewComponent"/>
         <category value="@org.protege.ontologycategory"/>
     </extension>
 </plugin>

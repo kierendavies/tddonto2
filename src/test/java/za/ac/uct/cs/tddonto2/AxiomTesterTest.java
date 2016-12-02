@@ -1,4 +1,4 @@
-package za.ac.uct.cs.tddontoi;
+package za.ac.uct.cs.tddonto2;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

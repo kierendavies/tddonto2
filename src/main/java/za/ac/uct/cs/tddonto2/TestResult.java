@@ -1,4 +1,4 @@
-package za.ac.uct.cs.tddontoi;
+package za.ac.uct.cs.tddonto2;
 
 public enum TestResult {
     ENTAILED, ABSENT, INCOHERENT, INCONSISTENT, MISSING_ENTITY, PRE_INCOHERENT, PRE_INCONSISTENT;

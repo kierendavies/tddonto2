@@ -1,4 +1,4 @@
-package za.ac.uct.cs.tddontoi;
+package za.ac.uct.cs.tddonto2;
 
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 import org.semanticweb.owlapi.model.IRI;

@@ -1,4 +1,4 @@
-package za.ac.uct.cs.tddontoi;
+package za.ac.uct.cs.tddonto2;
 
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.Node;
@@ -7,7 +7,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.*;
 
-import static za.ac.uct.cs.tddontoi.TestResult.*;
+import static za.ac.uct.cs.tddonto2.TestResult.*;
 
 public class AxiomTester {
     private final OWLReasoner reasoner;
