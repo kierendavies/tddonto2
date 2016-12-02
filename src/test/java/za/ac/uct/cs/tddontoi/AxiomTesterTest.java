@@ -47,8 +47,24 @@ public class AxiomTesterTest {
 
     @Test
     public void testDispatch() throws Exception {
-        OWLAxiom axiom = dataFactory.getOWLSubClassOfAxiom(parseClass("Margherita"), parseClass("Pizza"));
-        assertEquals(TestResult.ENTAILED, axiomTester.test(axiom));
+        assertEquals(
+                TestResult.ENTAILED,
+                axiomTester.test(
+                        dataFactory.getOWLSubClassOfAxiom(
+                                parseClass("Margherita"),
+                                parseClass("Pizza")
+                        )
+                )
+        );
+        assertEquals(
+                TestResult.MISSING_ENTITY,
+                axiomTester.test(
+                        dataFactory.getOWLSubClassOfAxiom(
+                                parseClass("NotARealPizza"),
+                                parseClass("Pizza")
+                        )
+                )
+        );
     }
 
     @Test
