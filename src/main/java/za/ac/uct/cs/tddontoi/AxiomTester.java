@@ -55,7 +55,7 @@ public class AxiomTester {
         } else if (axiom instanceof OWLClassAssertionAxiom) {
             OWLClassAssertionAxiom caAxiom = (OWLClassAssertionAxiom) axiom;
             if (!(caAxiom.getIndividual() instanceof OWLNamedIndividual)) {
-                // Can't test anonymous individuals. Not sure if this is even allowed.
+                // Can't test anonymous individuals. Not sure if they're even allowed.
                 throw new UnsupportedOperationException();
             }
             return testClassAssertion(caAxiom.getClassExpression(), (OWLNamedIndividual) caAxiom.getIndividual());
@@ -105,7 +105,7 @@ public class AxiomTester {
         if (cs instanceof List) {
             csAsList = (List<OWLClassExpression>) cs;
         } else {
-            csAsList = new ArrayList<OWLClassExpression>(cs.size());
+            csAsList = new ArrayList<>(cs.size());
             csAsList.addAll(cs);
         }
 
@@ -132,7 +132,7 @@ public class AxiomTester {
             csAsSet.addAll(cs);
         }
 
-        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(csAsSet));
+        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(cs));
         TestResult disjResult = testDisjointClasses(cs);
         return TestResult.max(equivResult, disjResult);
     }
@@ -149,10 +149,11 @@ public class AxiomTester {
             return ENTAILED;
         }
         for (OWLNamedIndividual a : as) {
-            Set<OWLNamedIndividual> differentIndividuals = reasoner.getDifferentIndividuals(a).getFlattened();
-            differentIndividuals.retainAll(as);
-            if (!differentIndividuals.isEmpty()) {
-                return INCONSISTENT;
+            NodeSet<OWLNamedIndividual> differentIndividuals = reasoner.getDifferentIndividuals(a);
+            for (OWLNamedIndividual b : as) {
+                if (differentIndividuals.containsEntity(b)) {
+                    return INCONSISTENT;
+                }
             }
         }
         return ABSENT;
@@ -167,7 +168,7 @@ public class AxiomTester {
         if (as instanceof List) {
             asAsList = (List<OWLNamedIndividual>) as;
         } else {
-            asAsList = new ArrayList<OWLNamedIndividual>(as.size());
+            asAsList = new ArrayList<>(as.size());
             asAsList.addAll(as);
         }
 

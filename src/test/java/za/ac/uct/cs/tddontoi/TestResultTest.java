@@ -1,8 +1,8 @@
 package za.ac.uct.cs.tddontoi;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static za.ac.uct.cs.tddontoi.TestResult.*;
 
 public class TestResultTest {

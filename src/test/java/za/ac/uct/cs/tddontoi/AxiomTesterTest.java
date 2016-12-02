@@ -1,23 +1,23 @@
 package za.ac.uct.cs.tddontoi;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.semanticweb.HermiT.Reasoner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.semanticweb.HermiT.ReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AxiomTesterTest {
     private static final String pizzaPath = "src/test/resources/pizza.owl";
     private static final String pizzaPrefix = "http://www.co-ode.org/ontologies/pizza/pizza.owl#";
 
-    private OWLDataFactory dataFactory;
-    private AxiomTester axiomTester;
+    private static OWLDataFactory dataFactory;
+    private static AxiomTester axiomTester;
 
     private OWLClass parseClass(String name) {
         return dataFactory.getOWLClass(IRI.create(pizzaPrefix, name));
@@ -31,16 +31,16 @@ public class AxiomTesterTest {
         return dataFactory.getOWLObjectProperty(IRI.create(pizzaPrefix, name));
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeAll
+    public static void setUp() throws Exception {
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         dataFactory = manager.getOWLDataFactory();
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(pizzaPath));
-        OWLReasoner reasoner = new Reasoner(ontology);
+        OWLReasoner reasoner = new ReasonerFactory().createNonBufferingReasoner(ontology);
 
         // Ensure preconditions
         assertTrue(reasoner.isConsistent());
-        assertEquals(reasoner.getUnsatisfiableClasses().getSize(), 1);  // always includes owl:Nothing
+        assertEquals(1, reasoner.getUnsatisfiableClasses().getSize());  // always includes owl:Nothing
 
         axiomTester = new AxiomTester(reasoner);
     }
