@@ -1,6 +1,9 @@
 package za.ac.uct.cs.tddontoi;
 
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -55,7 +58,7 @@ public class AxiomTester {
         if (cs instanceof List) {
             csAsList = (List<OWLClassExpression>) cs;
         } else {
-            csAsList = new ArrayList<OWLClassExpression>();
+            csAsList = new ArrayList<OWLClassExpression>(cs.size());
             csAsList.addAll(cs);
         }
 
@@ -73,10 +76,22 @@ public class AxiomTester {
         return testDisjointClasses(Arrays.asList(cs));
     }
 
-    public TestResult testDisjointUnion(OWLClass n, OWLClassExpression... cs) {
-        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(cs));
+    public TestResult testDisjointUnion(OWLClass n, Collection<OWLClassExpression> cs) {
+        Set<OWLClassExpression> csAsSet;
+        if (cs instanceof Set) {
+            csAsSet = (Set<OWLClassExpression>) cs;
+        } else {
+            csAsSet = new HashSet<OWLClassExpression>(cs.size());
+            csAsSet.addAll(cs);
+        }
+
+        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(csAsSet));
         TestResult disjResult = testDisjointClasses(cs);
         return TestResult.max(equivResult, disjResult);
+    }
+
+    public TestResult testDisjointUnion(OWLClass n, OWLClassExpression... cs) {
+        return testDisjointUnion(n, Arrays.asList(cs));
     }
 
     // ABox
@@ -105,7 +120,7 @@ public class AxiomTester {
         if (as instanceof List) {
             asAsList = (List<OWLNamedIndividual>) as;
         } else {
-            asAsList = new ArrayList<OWLNamedIndividual>();
+            asAsList = new ArrayList<OWLNamedIndividual>(as.size());
             asAsList.addAll(as);
         }
 
