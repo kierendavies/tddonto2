@@ -46,6 +46,12 @@ public class AxiomTesterTest {
     }
 
     @Test
+    public void testDispatch() throws Exception {
+        OWLAxiom axiom = dataFactory.getOWLSubClassOfAxiom(parseClass("Margherita"), parseClass("Pizza"));
+        assertEquals(TestResult.ENTAILED, axiomTester.test(axiom));
+    }
+
+    @Test
     public void testSubClassOf() throws Exception {
         assertEquals(
                 TestResult.ENTAILED,

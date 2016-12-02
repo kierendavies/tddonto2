@@ -1,9 +1,6 @@
 package za.ac.uct.cs.tddontoi;
 
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -19,6 +16,56 @@ public class AxiomTester {
     public AxiomTester(OWLReasoner reasoner) {
         this.reasoner = reasoner;
         dataFactory = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory();
+    }
+
+    @SuppressWarnings("unchecked")
+    public TestResult test(OWLAxiom axiom, boolean testPreconditions) throws UnsupportedOperationException {
+        if (testPreconditions) {
+            if (!reasoner.isConsistent()) {
+                return PRE_INCONSISTENT;
+            } else if (reasoner.getUnsatisfiableClasses().getSize() > 1) {
+                return PRE_INCOHERENT;
+            }
+        }
+
+        for (OWLEntity e : axiom.getSignature()) {
+            if (!reasoner.getRootOntology().containsEntityInSignature(e, true)) {
+                return MISSING_ENTITY;
+            }
+        }
+
+        if (axiom instanceof OWLSubClassOfAxiom) {
+            OWLSubClassOfAxiom scoAxiom = (OWLSubClassOfAxiom) axiom;
+            return testSubClassOf(scoAxiom.getSubClass(), scoAxiom.getSuperClass());
+        } else if (axiom instanceof OWLEquivalentClassesAxiom) {
+            return testEquivalentClasses(((OWLEquivalentClassesAxiom) axiom).getClassExpressions());
+        } else if (axiom instanceof OWLDisjointClassesAxiom) {
+            return testDisjointClasses(((OWLDisjointClassesAxiom) axiom).getClassExpressionsAsList());
+        } else if (axiom instanceof OWLDisjointUnionAxiom) {
+            OWLDisjointUnionAxiom duAxiom = (OWLDisjointUnionAxiom) axiom;
+            return testDisjointUnion(duAxiom.getOWLClass(), duAxiom.getClassExpressions());
+        } else if (axiom instanceof OWLSameIndividualAxiom) {
+            // OWLSameIndividualAxiom is not allowed to contain anonymous
+            // individuals, but the type signature of getIndividuals is not
+            // specific, so we need to do this horrible casting.
+            return testSameIndividual((Set<OWLNamedIndividual>) (Set<?>) ((OWLSameIndividualAxiom) axiom).getIndividuals());
+        } else if (axiom instanceof OWLDifferentIndividualsAxiom) {
+            // As above
+            return testDifferentIndividuals((Set<OWLNamedIndividual>) (Set<?>) ((OWLDifferentIndividualsAxiom) axiom).getIndividuals());
+        } else if (axiom instanceof OWLClassAssertionAxiom) {
+            OWLClassAssertionAxiom caAxiom = (OWLClassAssertionAxiom) axiom;
+            if (!(caAxiom.getIndividual() instanceof OWLNamedIndividual)) {
+                // Can't test anonymous individuals. Not sure if this is even allowed.
+                throw new UnsupportedOperationException();
+            }
+            return testClassAssertion(caAxiom.getClassExpression(), (OWLNamedIndividual) caAxiom.getIndividual());
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    public TestResult test(OWLAxiom axiom) {
+        return test(axiom, true);
     }
 
     // TBox
