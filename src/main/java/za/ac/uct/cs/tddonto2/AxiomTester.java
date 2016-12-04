@@ -5,6 +5,7 @@ import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static za.ac.uct.cs.tddonto2.TestResult.*;
@@ -18,16 +19,19 @@ public class AxiomTester {
         dataFactory = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory();
     }
 
-    @SuppressWarnings("unchecked")
-    public TestResult test(OWLAxiom axiom, boolean testPreconditions) throws UnsupportedOperationException {
-        if (testPreconditions) {
-            if (!reasoner.isConsistent()) {
-                return PRE_INCONSISTENT;
-            } else if (reasoner.getUnsatisfiableClasses().getSize() > 1) {
-                return PRE_INCOHERENT;
-            }
+    @Nullable
+    public TestResult testPreconditions() {
+        if (!reasoner.isConsistent()) {
+            return PRE_INCONSISTENT;
+        } else if (reasoner.getUnsatisfiableClasses().getSize() > 1) {
+            return PRE_INCOHERENT;
+        } else {
+            return null;
         }
+    }
 
+    @SuppressWarnings("unchecked")
+    public TestResult test(OWLAxiom axiom) throws UnsupportedOperationException {
         for (OWLEntity e : axiom.getSignature()) {
             if (!reasoner.getRootOntology().containsEntityInSignature(e, true)) {
                 return MISSING_ENTITY;
@@ -62,10 +66,6 @@ public class AxiomTester {
         }
 
         throw new UnsupportedOperationException();
-    }
-
-    public TestResult test(OWLAxiom axiom) {
-        return test(axiom, true);
     }
 
     // TBox
@@ -128,11 +128,11 @@ public class AxiomTester {
         if (cs instanceof Set) {
             csAsSet = (Set<OWLClassExpression>) cs;
         } else {
-            csAsSet = new HashSet<OWLClassExpression>(cs.size());
+            csAsSet = new HashSet<>(cs.size());
             csAsSet.addAll(cs);
         }
 
-        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(cs));
+        TestResult equivResult = testEquivalentClasses(n, dataFactory.getOWLObjectUnionOf(csAsSet));
         TestResult disjResult = testDisjointClasses(cs);
         return TestResult.max(equivResult, disjResult);
     }
