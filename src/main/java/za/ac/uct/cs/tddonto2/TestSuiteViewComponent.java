@@ -52,6 +52,7 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
         add(editorPanel, BorderLayout.NORTH);
 
         editor = new ExpressionEditor<>(getOWLEditorKit(), getOWLModelManager().getOWLExpressionCheckerFactory().getClassAxiomChecker());
+        editor.addStatusChangedListener(e -> clearEditorTestResult());
         editorPanel.add(editor, BorderLayout.CENTER);
 
         JPanel editorButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -105,6 +106,10 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     private void addTest() {
         tableModel.addRow(new Object[] {editor.getText(), null});
         tableModel.fireTableDataChanged();
+    }
+
+    private void clearEditorTestResult() {
+        editorResultLabel.setText("");
     }
 
     private void evaluateEditorTest() {
