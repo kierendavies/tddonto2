@@ -11,11 +11,12 @@ import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxInlineAxiomParser;
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClassAxiom;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 public class TestSuiteViewComponent extends AbstractOWLViewComponent {
@@ -73,6 +74,28 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
         testSuite = new TestSuiteModel();
         table = new JTable(testSuite);
         table.setFillsViewportHeight(true);
+        table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                setText(getOWLModelManager().getRendering((OWLObject) value));
+            }
+        });
+        table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                TestResult result = (TestResult) value;
+                if (result == null) {
+                    setText("");
+                } else {
+                    setText(result.humanize());
+                }
+                if (result == TestResult.ENTAILED) {
+                    setBackground(Color.GREEN);
+                } else {
+                    setBackground(Color.RED);
+                }
+            }
+        });
         add(ComponentFactory.createScrollPane(table), BorderLayout.CENTER);
 
         // Main buttons
@@ -101,7 +124,7 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     protected void disposeOWLView() {
     }
 
-    private void addTest() {
+    private OWLAxiom parseEditor() {
         OWLAxiom axiom;
         try {
             axiom = parser.parse(editor.getText());
@@ -112,6 +135,13 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
                     "Syntax error.",
                     JOptionPane.WARNING_MESSAGE
             );
+            return null;
+        }
+    }
+
+    private void addTest() {
+        OWLAxiom axiom = parseEditor();
+        if (axiom == null) {
             return;
         }
         testSuite.add(axiom);
@@ -131,11 +161,8 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
 
         AxiomTester axiomTester = new AxiomTester(reasonerManager.getCurrentReasoner());
 
-        OWLAxiom axiom;
-        try {
-            axiom = parser.parse(editor.getText());
-        } catch (OWLParserException e) {
-            editorResultLabel.setText("Syntax error or missing entity");
+        OWLAxiom axiom = parseEditor();
+        if (axiom == null) {
             return;
         }
 

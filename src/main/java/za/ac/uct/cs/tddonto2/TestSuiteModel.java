@@ -43,13 +43,9 @@ public class TestSuiteModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return axioms.get(rowIndex).toString();
+                return axioms.get(rowIndex);
             case 1:
-                if (results.get(rowIndex) == null) {
-                    return "";
-                } else {
-                    return results.get(rowIndex).humanize();
-                }
+                return results.get(rowIndex);
             default:
                 throw new IndexOutOfBoundsException("Column index must be less than 2");
         }
