@@ -16,7 +16,6 @@ import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class TestSuiteViewComponent extends AbstractOWLViewComponent {
@@ -25,7 +24,7 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     private ExpressionEditor<OWLClassAxiom> editor;
     private JLabel editorResultLabel;
     private JTable table;
-    private DefaultTableModel tableModel;
+    private TestSuiteModel testSuite;
 
     @Override
     protected void initialiseOWLView() throws Exception {
@@ -71,9 +70,8 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
 
         // Main table
 
-        Object[] columnHeads = {"Test axiom", "Result"};
-        tableModel = new DefaultTableModel(new Object[][] {}, columnHeads);
-        table = new JTable(tableModel);
+        testSuite = new TestSuiteModel();
+        table = new JTable(testSuite);
         table.setFillsViewportHeight(true);
         add(ComponentFactory.createScrollPane(table), BorderLayout.CENTER);
 
@@ -104,8 +102,20 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     }
 
     private void addTest() {
-        tableModel.addRow(new Object[] {editor.getText(), null});
-        tableModel.fireTableDataChanged();
+        OWLAxiom axiom;
+        try {
+            axiom = parser.parse(editor.getText());
+        } catch (OWLParserException e) {
+            JOptionPane.showMessageDialog(
+                    getOWLWorkspace(),
+                    "Syntax error: " + e.getMessage(),
+                    "Syntax error.",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+        testSuite.add(axiom);
+        testSuite.fireTableDataChanged();
     }
 
     private void clearEditorTestResult() {
@@ -119,18 +129,22 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
             return;
         }
 
-        try {
-            AxiomTester axiomTester = new AxiomTester(reasonerManager.getCurrentReasoner());
+        AxiomTester axiomTester = new AxiomTester(reasonerManager.getCurrentReasoner());
 
-            TestResult preconditionResult = axiomTester.testPreconditions();
-            if (preconditionResult != null) {
-                editorResultLabel.setText(preconditionResult.humanize());
-            } else {
-                TestResult result = axiomTester.test(parser.parse(editor.getText()));
-                editorResultLabel.setText(result.humanize());
-            }
+        OWLAxiom axiom;
+        try {
+            axiom = parser.parse(editor.getText());
         } catch (OWLParserException e) {
             editorResultLabel.setText("Syntax error or missing entity");
+            return;
+        }
+
+        TestResult preconditionResult = axiomTester.testPreconditions();
+        if (preconditionResult != null) {
+            editorResultLabel.setText(preconditionResult.humanize());
+        } else {
+            TestResult result = axiomTester.test(axiom);
+            editorResultLabel.setText(result.humanize());
         }
     }
 
@@ -141,23 +155,7 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
             return;
         }
 
-        AxiomTester axiomTester = new AxiomTester(reasonerManager.getCurrentReasoner());
-
-        TestResult preconditionResult = axiomTester.testPreconditions();
-        if (preconditionResult != null) {
-            for (int row = 0; row < table.getRowCount(); ++row) {
-                table.setValueAt(preconditionResult.humanize(), row, 1);
-            }
-        } else {
-            for (int row = 0; row < table.getRowCount(); ++row) {
-                try {
-                    TestResult result = axiomTester.test(parser.parse((String) table.getValueAt(row, 0)));
-                    table.setValueAt(result.humanize(), row, 1);
-                } catch (OWLParserException e) {
-                    table.setValueAt("Syntax error or missing entity", row, 1);
-                }
-            }
-        }
+        testSuite.evaluateAll(new AxiomTester(reasonerManager.getCurrentReasoner()));
     }
 
     private void evaluateSelectedTests() {
@@ -167,34 +165,11 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
             return;
         }
 
-        int[] selectedRows = table.getSelectedRows();
-
-        AxiomTester axiomTester = new AxiomTester(reasonerManager.getCurrentReasoner());
-
-        TestResult preconditionResult = axiomTester.testPreconditions();
-        if (preconditionResult != null) {
-            for (int row : selectedRows) {
-                table.setValueAt(preconditionResult.humanize(), row, 1);
-            }
-        } else {
-            for (int row : selectedRows) {
-                System.out.println(row);
-                try {
-                    TestResult result = axiomTester.test(parser.parse((String) table.getValueAt(row, 0)));
-                    table.setValueAt(result.humanize(), row, 1);
-                } catch (OWLParserException e) {
-                    table.setValueAt("Syntax error or missing entity", row, 1);
-                }
-            }
-        }
+        testSuite.evaluateOnly(new AxiomTester(reasonerManager.getCurrentReasoner()), table.getSelectedRows());
     }
 
     private void removeSelectedTests() {
-        int[] selectedRows = table.getSelectedRows();
-        for (int row : selectedRows) {
-            tableModel.removeRow(row);
-        }
-        tableModel.fireTableDataChanged();
+        testSuite.remove(table.getSelectedRows());
     }
 
     private void addSelectedTestsToOntology() {
