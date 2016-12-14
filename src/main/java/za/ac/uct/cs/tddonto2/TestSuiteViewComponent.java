@@ -219,6 +219,14 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     }
 
     private void addSelectedTestsToOntology() {
-
+        for (int i : table.getSelectedRows()) {
+            testSuite.addToOntology(getOWLModelManager(), i);
+        }
+        JOptionPane.showMessageDialog(
+                getOWLWorkspace(),
+                String.format("%d axioms added to the active ontology.", table.getSelectedRowCount()),
+                "Axioms added.",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }

@@ -1,6 +1,9 @@
 package za.ac.uct.cs.tddonto2;
 
+import org.protege.editor.owl.model.OWLModelManager;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -104,7 +107,7 @@ public class TestSuiteModel extends AbstractTableModel {
         fireTableRowsUpdated(0, axioms.size());  // TODO: this range could be smaller
     }
 
-//    @Override
-//    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-//    }
+    public void addToOntology(OWLModelManager modelManager, int index) {
+        modelManager.applyChange(new AddAxiom(modelManager.getActiveOntology(), axioms.get(index)));
+    }
 }
