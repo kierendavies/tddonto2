@@ -1,19 +1,23 @@
 package za.ac.uct.cs.tddonto2;
 
 import org.protege.editor.core.ui.util.ComponentFactory;
+import org.protege.editor.owl.model.classexpression.OWLExpressionParserException;
 import org.protege.editor.owl.model.inference.OWLReasonerManager;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.protege.editor.owl.model.inference.ReasonerUtilities;
+import org.protege.editor.owl.model.parser.ParserUtil;
 import org.protege.editor.owl.ui.clsdescriptioneditor.ExpressionEditor;
+import org.protege.editor.owl.ui.clsdescriptioneditor.OWLExpressionChecker;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
-import org.semanticweb.owlapi.expression.OWLExpressionParser;
+import org.semanticweb.owlapi.OWLAPIConfigProvider;
 import org.semanticweb.owlapi.expression.ShortFormEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
-import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxInlineAxiomParser;
+import org.semanticweb.owlapi.manchestersyntax.renderer.ParserException;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.util.BidirectionalShortFormProviderAdapter;
 import org.semanticweb.owlapi.util.SimpleShortFormProvider;
+import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -21,16 +25,16 @@ import java.awt.*;
 
 public class TestSuiteViewComponent extends AbstractOWLViewComponent {
 
-    OWLExpressionParser<OWLAxiom> parser;
-    private ExpressionEditor<OWLClassAxiom> editor;
+    ManchesterOWLSyntaxParser parser;
+    private ExpressionEditor<OWLAxiom> editor;
     private JLabel editorResultLabel;
     private JTable table;
     private TestSuiteModel testSuite;
 
     @Override
     protected void initialiseOWLView() throws Exception {
-        parser = new ManchesterOWLSyntaxInlineAxiomParser(
-                getOWLDataFactory(),
+        parser = new ManchesterOWLSyntaxParserFixed(new OWLAPIConfigProvider(), getOWLDataFactory());
+        parser.setOWLEntityChecker(
                 new ShortFormEntityChecker(
                         new BidirectionalShortFormProviderAdapter(
                                 getOWLModelManager().getActiveOntology().getOWLOntologyManager(),
@@ -51,7 +55,22 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
         ));
         add(editorPanel, BorderLayout.NORTH);
 
-        editor = new ExpressionEditor<>(getOWLEditorKit(), getOWLModelManager().getOWLExpressionCheckerFactory().getClassAxiomChecker());
+        editor = new ExpressionEditor<>(getOWLEditorKit(), new OWLExpressionChecker<OWLAxiom>() {
+            @Override
+            public void check(String text) throws OWLExpressionParserException {
+                createObject(text);
+            }
+
+            @Override
+            public OWLAxiom createObject(String text) throws OWLExpressionParserException {
+                parser.setStringToParse(text);
+                try {
+                    return parser.parseAxiom();
+                } catch (ParserException e) {
+                    throw ParserUtil.convertException(e);
+                }
+            }
+        });
         editor.addStatusChangedListener(e -> clearEditorTestResult());
         editorPanel.add(editor, BorderLayout.CENTER);
 
@@ -125,9 +144,9 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
     }
 
     private OWLAxiom parseEditor() {
-        OWLAxiom axiom;
         try {
-            axiom = parser.parse(editor.getText());
+            parser.setStringToParse(editor.getText());
+            return parser.parseAxiom();
         } catch (OWLParserException e) {
             JOptionPane.showMessageDialog(
                     getOWLWorkspace(),
