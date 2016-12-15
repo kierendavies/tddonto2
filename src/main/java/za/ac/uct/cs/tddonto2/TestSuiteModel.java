@@ -78,7 +78,6 @@ public class TestSuiteModel extends AbstractTableModel {
         results.set(index, result);
     }
 
-    // TODO: nice reporting
     public void evaluateAll(AxiomTester tester) {
         preconditionsResult = tester.testPreconditions();
         if (preconditionsResult != null) {

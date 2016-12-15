@@ -24,8 +24,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 public class TestSuiteViewComponent extends AbstractOWLViewComponent {
+    private static final Color COLOUR_UNKNOWN = Color.WHITE;
+    private static final Color COLOUR_ENTAILED = new Color(127, 255, 127);
+    private static final Color COLOUR_ABSENT = new Color(127, 255, 127);
+    private static final Color COLOUR_FAIL = new Color(255, 127, 127);
 
-    ManchesterOWLSyntaxParser parser;
+    private ManchesterOWLSyntaxParser parser;
     private ExpressionEditor<OWLAxiom> editor;
     private JLabel editorResultLabel;
     private JTable table;
@@ -105,13 +109,19 @@ public class TestSuiteViewComponent extends AbstractOWLViewComponent {
                 TestResult result = (TestResult) value;
                 if (result == null) {
                     setText("");
+                    setBackground(COLOUR_UNKNOWN);
                 } else {
                     setText(result.humanize());
-                }
-                if (result == TestResult.ENTAILED) {
-                    setBackground(Color.GREEN);
-                } else {
-                    setBackground(Color.RED);
+                    switch (result) {
+                        case ENTAILED:
+                            setBackground(COLOUR_ENTAILED);
+                            break;
+                        case ABSENT:
+                            setBackground(COLOUR_ABSENT);
+                            break;
+                        default:
+                            setBackground(COLOUR_FAIL);
+                    }
                 }
             }
         });
