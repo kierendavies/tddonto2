@@ -11,8 +11,9 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class Benchmark {
+    // Put ontologies in src/main/resources and add their paths here like this.
     private static final String[] ontologyPaths = {
-            "src/test/resources/pizza.owl"
+            "src/main/resources/pizza.owl"
     };
 
     // Change this to whatever you want
