@@ -327,11 +327,11 @@ public class ActionCounter {
     private void printCalcSet(List<Action> basicActions, Action tddAction) {
         System.out.printf(
                 "\tBasic %6.2f s\n",
-                basicActions.stream().mapToDouble(Action::timeTaken).min().orElse(Double.NaN)
+                basicActions.stream().mapToDouble(Action::timeTaken).min().orElse(Double.NaN) + reasoningTime
         );
         System.out.printf(
                 "\tTDD   %6.2f s\n",
-                tddAction.timeTaken() + reasoningTime
+                tddAction.timeTaken()
         );
     }
 
