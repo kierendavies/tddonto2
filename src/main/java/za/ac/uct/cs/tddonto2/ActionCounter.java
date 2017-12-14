@@ -4,13 +4,13 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.OWLObjectRenderer;
 import org.semanticweb.owlapi.manchestersyntax.renderer.ManchesterOWLSyntaxOWLObjectRendererImpl;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 class Action {
     private static final double CLICK_TIME = 1.0;
@@ -35,13 +35,13 @@ class Action {
 }
 
 public class ActionCounter {
-    private static final int REASONING_TRIALS = 10;
+    private static final int REASONING_TRIALS = 1;
     private static final OWLObjectRenderer renderer = new ManchesterOWLSyntaxOWLObjectRendererImpl();
 
     private final OWLOntology ontology;
     private final OWLDataFactory dataFactory;
     private final String iriPrefix;
-    private final OWLReasoner reasoner;
+    private OWLReasoner reasoner;
 
     private final double reasoningTime;
     private final double averageClassNameLength;
@@ -54,18 +54,20 @@ public class ActionCounter {
         this.ontology = ontology;
         this.iriPrefix = iriPrefix;
         dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        reasoner = reasonerFactory.createNonBufferingReasoner(ontology);
+//        reasoner = reasonerFactory.createNonBufferingReasoner(ontology);
 
         double reasoningTime = 0;
         for (int i = 0; i < REASONING_TRIALS; i++) {
             double startTime = System.nanoTime();
-            reasonerFactory.createNonBufferingReasoner(ontology);
+            reasoner = reasonerFactory.createNonBufferingReasoner(ontology);
+            reasoner.precomputeInferences(InferenceType.values());
             double endTime = System.nanoTime();
             reasoningTime += endTime - startTime;
         }
         reasoningTime /= REASONING_TRIALS;
         reasoningTime /= 1e9;  // ns to s
         this.reasoningTime = reasoningTime;
+//        System.out.println(reasoningTime);
 
         averageClassNameLength = ontology.getClassesInSignature()
                 .stream().mapToInt(this::nameLength).average().orElse(0);
@@ -73,11 +75,35 @@ public class ActionCounter {
                 .stream().mapToInt(this::nameLength).average().orElse(0);
         averageIndividualNameLength = ontology.getIndividualsInSignature()
                 .stream().mapToInt(this::nameLength).average().orElse(0);
+
+//        HashMap<String, Integer> depth = new HashMap<>();
+//        depth.put(dataFactory.getOWLThing().getIRI().toString(), 0);
+//        Queue<String> queue = new LinkedList<>();
+//        queue.add(dataFactory.getOWLThing().getIRI().toString());
+//        while (!queue.isEmpty()) {
+//            String cName = queue.remove();
+//            int cDepth = depth.get(cName);
+//            OWLClass c = dataFactory.getOWLClass(IRI.create(cName));
+//            System.out.printf("%s %d", cName, cDepth);
+//            for (Node<OWLClass> node : reasoner.getSubClasses(c, true)) {
+//                for (OWLClass d : node) {
+//                    String dName = d.getIRI().toString();
+//                    System.out.println(dName);
+//                    if (!depth.containsKey(dName)) {
+//                        depth.put(dName, cDepth + 1);
+//                        queue.add(dName);
+//                    }
+//                }
+//            }
+//        }
+//        System.out.println("done");
         averageClassHierarchyDepth = ontology.getClassesInSignature()
                 .stream().mapToInt(this::hierarchyDepth).average().orElse(0);
         averageObjectPropertyHierarchyDepth = ontology.getObjectPropertiesInSignature()
                 .stream().mapToInt(this::hierarchyDepth).average().orElse(0);
         // TODO sloooooow.  do bfs or something
+//        averageClassHierarchyDepth = 0;
+//        averageObjectPropertyHierarchyDepth = 0;
     }
 
     private int nameLength(OWLEntity c) {
@@ -342,7 +368,6 @@ public class ActionCounter {
         System.out.printf("Object property name %.2f\n", averageObjectPropertyNameLength);
         System.out.printf("Object property depth %.2f\n", averageObjectPropertyHierarchyDepth);
         System.out.printf("Individual name %.2f\n", averageIndividualNameLength);
-        System.out.println();
 
         System.out.println("(i) SubClassOf");
         printCalcSet(
@@ -380,10 +405,10 @@ public class ActionCounter {
                 tddActionForClassAssertion()
         );
 
-        System.out.println("(vii) ObjectPropertyRange");
+        System.out.println("(vii) SubClassOfObjectCardinalityRestriction");
         printCalcSet(
-                basicActionsForObjectPropertyDomainOrRange(),
-                tddActionForObjectPropertyRange()
+                basicActionsForSubClassOfObjectCardinalityRestriction(),
+                tddActionForSubClassOfObjectCardinalityRestriction()
         );
 
         System.out.println("(viii) TypedAxiom");
@@ -407,11 +432,37 @@ public class ActionCounter {
 
         // TODO use actual test ontologies
 
-        String pizzaPath = "src/test/resources/pizza.owl";
-        String pizzaPrefix = "http://www.co-ode.org/ontologies/pizza/pizza.owl#";
-        OWLOntologyManager pizzaManager = OWLManager.createOWLOntologyManager();
-        OWLOntology pizzaOntology = pizzaManager.loadOntologyFromOntologyDocument(new File(pizzaPath));
-        ActionCounter pizzaAc = new ActionCounter(pizzaOntology, pizzaPrefix, hermitReasonerFactory);
-        pizzaAc.printCalculations();
+        String[][] ontologies = {
+//                {
+//                        "src/main/resources/pizza.owl",
+//                        "http://www.co-ode.org/ontologies/pizza/pizza.owl#"
+//                },
+//                {
+//                        "src/main/resources/AfricanWildlifeOntology1.owl",
+//                        "file:/Applications/Protege_4.1_beta/AfricanWildlifeOntology1.owl#"
+//                },
+                {
+                        "src/main/resources/DMOP/DMOPresaved.owl",
+                        "http://www.e-LICO.eu/ontologies/dmo/DMOP/DMOP.owl#"
+                },
+//                {
+//                        "src/main/resources/tonesOntologies/Movie.owl",
+//                        "http://www.owl-ontologies.com/Movie.owl#"
+//                },
+//                {
+//                        "src/main/resources/tonesOntologies/substance.owl",
+//                        "http://sweet.jpl.nasa.gov/1.1/substance.owl#"
+//                }
+        };
+
+        for (String[] pathAndPrefix : ontologies) {
+            String path = pathAndPrefix[0];
+            String prefix = pathAndPrefix[1];
+            System.out.printf("Using ontology %s\n", path);
+            OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+            OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new File(path));
+            ActionCounter actionCounter = new ActionCounter(ontology, prefix, hermitReasonerFactory);
+            actionCounter.printCalculations();
+        }
     }
 }
